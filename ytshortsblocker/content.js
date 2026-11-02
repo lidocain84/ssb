@@ -21,8 +21,21 @@
   let lastWarn = 0;
   let lastHeuristicAt = 0;
   let heuristicCache = null;
+  let timer = null;
+  let raf = null;
 
-  chrome.storage.local.get(DEFAULTS).then((s) => { state = { ...DEFAULTS, ...s }; });
+  // After the extension is reloaded/updated, old content scripts in open tabs lose access to chrome.*
+  // ("Extension context invalidated"). Detect that and shut the orphaned script down quietly.
+  const alive = () => { try { return !!(chrome.runtime && chrome.runtime.id); } catch (e) { return false; } };
+  function shutdown() {
+    clearInterval(timer);
+    cancelAnimationFrame(raf);
+    if (btn) btn.remove();
+    if (toastEl) toastEl.remove();
+  }
+  function save(obj) { try { chrome.storage.local.set(obj); } catch (e) { /* context gone */ } }
+
+  chrome.storage.local.get(DEFAULTS).then((s) => { state = { ...DEFAULTS, ...s }; }).catch(() => {});
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     for (const k in changes) state[k] = changes[k].newValue;
@@ -120,11 +133,11 @@
       if (entry) {
         const sound = current;
         state.blocked = state.blocked.filter((b) => !matches(b, sound));
-        chrome.storage.local.set({ blocked: state.blocked });
+        save({ blocked: state.blocked });
         toast("Unblocked: " + current.name);
       } else {
         state.blocked = [...state.blocked, { id: current.id, name: current.name }];
-        chrome.storage.local.set({ blocked: state.blocked });
+        save({ blocked: state.blocked });
         toast("Blocked: " + current.name);
         lastKey = location.pathname + current.id;
         setTimeout(skip, 250);
@@ -149,6 +162,7 @@
 
   // Keep the button directly under the sound chip (or next to it if there's no room below)
   function place() {
+    if (!alive()) { shutdown(); return; }
     if (btn) {
       if (!isShorts()) {
         btn.style.display = "none";
@@ -168,10 +182,11 @@
         }
       }
     }
-    requestAnimationFrame(place);
+    raf = requestAnimationFrame(place);
   }
 
   function tick() {
+    if (!alive()) { shutdown(); return; }
     if (!isShorts()) return;
     ensureButton();
     current = getSound();
@@ -192,11 +207,11 @@
     if (findEntry(current) && Date.now() - lastSkipAt > 400) {
       lastSkipAt = Date.now();
       toast("Skipped: " + current.name);
-      chrome.storage.local.set({ skipped: (state.skipped || 0) + 1 });
+      save({ skipped: (state.skipped || 0) + 1 });
       skip();
     }
   }
 
-  setInterval(tick, 400);
-  requestAnimationFrame(place);
+  timer = setInterval(tick, 400);
+  raf = requestAnimationFrame(place);
 })();

@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Shorts Sound Blocker",
+  "version": "1.1.0",
+  "description": "Automatically skips YouTube Shorts that use sounds from your blocklist.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Shorts Sound Blocker"
+  }
+}

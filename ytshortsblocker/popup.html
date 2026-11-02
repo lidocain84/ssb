@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { width: 340px; font: 13px system-ui, sans-serif; margin: 12px; }
+    h1 { font-size: 15px; margin: 0 0 8px; }
+    label.row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    ul { list-style: none; margin: 8px 0; padding: 0; max-height: 220px; overflow-y: auto; }
+    li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #ddd; }
+    li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    li small { color: #777; display: block; }
+    button { cursor: pointer; }
+    .add { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .add input { padding: 4px; }
+    .muted { color: #777; }
+    .hint { color: #777; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>Shorts Sound Blocker</h1>
+  <label class="row"><input type="checkbox" id="enabled"> Filtering enabled</label>
+  <div class="muted" id="count"></div>
+  <ul id="list"></ul>
+  <div class="add">
+    <input id="entry" placeholder="Sound name or a …/source/… link">
+    <button id="add">Add to blocklist</button>
+    <div class="hint">Name entries match partially, so "don't stop the music" also blocks its slowed and sped-up versions.</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
